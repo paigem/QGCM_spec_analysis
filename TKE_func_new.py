@@ -9,6 +9,9 @@ from scipy.ndimage import gaussian_filter1d
 
 from netCDF4 import Dataset
 from datetime import datetime
+import window_func
+import detrend_func
+import calc_T_func
 #-----------------------------------------------------------------------
 # Functions used in the code
 
@@ -24,22 +27,29 @@ def ddy(var,dy):
 def avg_dim(var,axis,number):
 	for i in np.arange(number):
 		if axis == 'x':
-			return 0.5 * (var[:-1,:,:] + var[1:,:,:])
+			var = 0.5 * (var[:-1,:,:] + var[1:,:,:])
 		if axis == 'y':
-			return 0.5 * (var[:,:-1,:] + var[:,1:,:])
-		if axis == 'xy'
-			return 0.5 * (var[:-1,:-1,:] + var[1:,1:,:])
+			var = 0.5 * (var[:,:-1,:] + var[:,1:,:])
+		if axis == 'xy':
+			var = 0.5 * (var[:-1,:-1,:] + var[1:,1:,:])
+	return var
 
 
 #-----------------------------------------------------------------------
 
-def main(datapath,dataname,print_stuff):
+def main(datapath,dataname,print_stuff,spacetime,padding_fac,kfac):
 
 	### Load QGCM data
 	p_data = Dataset(datapath+dataname)
-	p_grid = p_data['p']
+	p = p_data['p']
 	del p_data
-	print 'p_grid.shape=',p_grid.shape
+	p = np.transpose(np.squeeze(p,(2,1,0))) # dimensions: (x,y,time)
+	if print_stuff:
+		print 'p.shape=',p.shape
+
+	# Define dx and dy
+	dx = 5000.
+	dy = 5000.
 
 	# Take derivative of p
 	p_x = avg_dim(ddx(p,dx),'y',1)
@@ -59,16 +69,19 @@ def main(datapath,dataname,print_stuff):
 	del del2p
 
 	# Calculate Jacobian
-	J = del2p_x * p_y + del2p_y * p_x
+	J = del2p_x * avg_dim(p_y,'xy',2) + del2p_y * avg_dim(p_x,'xy',2)
 	del p_x,p_y,del2p_x,del2p_y
 
 	if print_stuff:
 		print 'p.shape=',p.shape
 		print 'J.shape=',J.shape
 
-	# Window relevant terms (J and p)
-	#p = window_func(avg_dim(p,'xy',3))
-	#J = window_func(J)
+	# Ensure that dimensions are the same
+	p = avg_dim(p,'xy',3)
+
+	calc_T_func.main(p,J,spacetime,padding_fac,kfac)
+
+	print 'Got to the end!'
 	
 
 
