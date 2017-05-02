@@ -1,3 +1,7 @@
+# TPE_func: Performs calculations for potential energy transfer term
+# 	- is called by "run_Tkw.py"
+#-----------------------------------------------------------------------
+
 import numpy as np
 import math
 import scipy.io

@@ -1,3 +1,7 @@
+# buoyancy.py: Does calculation for buoyancy term in spectral transfer equation
+#	- is called by run_Tkw.py
+#----------------------------------------------------------------------
+
 import numpy as np
 import math
 import scipy.io
