@@ -19,30 +19,6 @@ import detrend_func
 import calc_T_func
 import calc_Tspatial_func
 #-----------------------------------------------------------------------
-# Functions used in the code
-
-# Take x-derivative and average y-axis
-def ddx(var,dx):
-	return (1./dx) * (var[:-1,:,:] - var[1:,:,:])
-	
-# Take y-derivative
-def ddy(var,dy):
-	return (1./dy) * (var[:,:-1,:] - var[:,1:,:]) 
-
-# Average specified dimension(s)
-def avg_dim(var,axis,number):
-	for i in np.arange(number):
-		if axis == 'x':
-			var = 0.5 * (var[:-1,:,:] + var[1:,:,:])
-		if axis == 'y':
-			var = 0.5 * (var[:,:-1,:] + var[:,1:,:])
-		if axis == 'xy':
-			var = 0.5 * (var[:-1,:-1,:] + var[1:,1:,:])
-	return var
-
-
-#-----------------------------------------------------------------------
-
 def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 
 	### Load pressure1
