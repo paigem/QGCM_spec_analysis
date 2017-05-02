@@ -16,8 +16,7 @@ from netCDF4 import Dataset
 from datetime import datetime
 import window_func
 import detrend_func
-import calc_T_func
-import calc_Tspatial_func
+import calc_T_func_longTime
 #-----------------------------------------------------------------------
 def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 
@@ -49,11 +48,8 @@ def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 	if terms_dict.get('print_stuff'):
 		print 'Mem usage before transfer func =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
 
-	if terms_dict.get('spatial_flag'):
-		transfer_iso,kiso,ktiso = calc_T_func.main(p_diff,e,terms_dict)
-		del kiso
-	else:
-		transfer_iso,kiso,ktiso = calc_T_func.main(p_diff,e,terms_dict)
+	# Call the transfer function
+	transfer_iso,ktiso = calc_T_func_longTime.main(p_diff,e,terms_dict)
 	del p_diff,e
 
 	# Multiply by the correct constants: 1 / ((f0) * Htot * gprime_layer)
@@ -81,11 +77,9 @@ def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 		if terms_dict.get('spatial_flag'):
 			#Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_spatial_1yr_test_layer1_yr159_dg2_output037.nc', 'w', format='NETCDF3_CLASSIC')
 			Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_spatial'+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc', 'w', format='NETCDF3_CLASSIC')
-			Tgrp.createDimension('x',transfer_iso.shape[0])
-			Tgrp.createDimension('y',transfer_iso.shape[1])
-			Tgrp.createDimension('w',transfer_iso.shape[2])
-			T = Tgrp.createVariable('T','f4',('x','y','w'))
-			T[:,:,:] = transfer_iso
+			Tgrp.createDimension('w',transfer_iso.shape[0])
+			T = Tgrp.createVariable('T','f4',('w'))
+			T[:] = transfer_iso
 			Tgrp.createDimension('ktiso_dim',len(ktiso_plot))
 			ktiso = Tgrp.createVariable('ktiso','f4',('ktiso_dim'))
 			ktiso[:] = ktiso_plot

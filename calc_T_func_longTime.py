@@ -1,10 +1,8 @@
 import numpy as np
 import math
 
-import detrend_func
-import window_func
-
-
+import detrend_func_longTime
+import window_func_longTime
 
 
 #----------------------------------------------------------------------------------------------------
@@ -104,17 +102,17 @@ def make_iso(var1,var2,wv,kiso):
 
 # Make frequencies isotropic (i.e. symmetric)
 def make_wiso(var1,var2):
-	endw = float(var1.shape[2])
+	endw = float(var1.shape[0])
 
 	# Define first and last entries of isotropic transfer
-	out1 = (10**9)*np.real(np.conjugate(var1[:,:,0])*var2[:,:,0])
-	out_end = (10**9)*np.real(np.conjugate(var1[:,:,0.5*endw])*var2[:,:,0.5*endw])
+	out1 = (10**9)*np.real(np.conjugate(var1[0])*var2[0])
+	out_end = (10**9)*np.real(np.conjugate(var1[0.5*endw])*var2[0.5*endw])
 	
 	# Define all other entries of isotropic transfer
-	out = (10**9)*np.real(np.conjugate(var1[:,:,1:0.5*endw])*var2[:,:,1:0.5*endw] + np.conjugate(var1[:,:,-1:0.5*endw+1:-1])*var2[:,:,-1:0.5*endw+1:-1])
+	out = (10**9)*np.real(np.conjugate(var1[1:0.5*endw])*var2[1:0.5*endw] + np.conjugate(var1[-1:0.5*endw+1:-1])*var2[-1:0.5*endw+1:-1])
 
 	# Concatenate the arrays together
-	out_final = np.dstack((out1,out,out_end))
+	out_final = np.hstack((out1,out,out_end))
 
 	return out_final
 
@@ -145,17 +143,17 @@ def main(var1,var2,terms_dict):
 	print 'ktiso.shape=',ktiso.shape
 
 	# Detrend relevant terms
-	var1 = detrend_func.main(var1,terms_dict.get('spacetime'))
-	var2 = detrend_func.main(var2,terms_dict.get('spacetime'))
+	var1 = detrend_func_longTime.main(var1,terms_dict.get('spacetime'))
+	var2 = detrend_func_longTime.main(var2,terms_dict.get('spacetime'))
 	print 'var1.shape = ',var1.shape
 
 	# Window relevant terms (J and p)
-	var1 = window_func.main(var1,terms_dict.get('spacetime'))
-	var2 = window_func.main(var2,terms_dict.get('spacetime'))
+	var1 = window_func_longTime.main(var1,terms_dict.get('spacetime'))
+	var2 = window_func_longTime.main(var2,terms_dict.get('spacetime'))
 
 	# Take FFT
-	var1_fft = (1.0/(nt)) * np.fft.fft(var1,axis=2)
-	var2_fft = (1.0/(nt)) * np.fft.fft(var2,axis=2)
+	var1_fft = (1.0/(nt)) * np.fft.fft(var1)
+	var2_fft = (1.0/(nt)) * np.fft.fft(var2)
 	del var1,var2
 
 	# Pad the variables
@@ -164,7 +162,7 @@ def main(var1,var2,terms_dict):
 		var2_fft = pad(var2_fft,Lx,Ly,nx,ny)
 
 	# Calculate the isotropic transfer
-	transfer_iso = make_wiso(var1_fft,var2_fft,wv)
+	transfer_iso = make_wiso(var1_fft,var2_fft)
 	print 'transfer_iso.shape = ',transfer_iso.shape
 	del var1_fft,var2_fft
 

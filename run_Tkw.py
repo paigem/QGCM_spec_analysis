@@ -20,8 +20,8 @@ import check_Ebalance_func
 # Specify parameters
 fluid_var = 'oc-coupled'
 climate_var = 'p'
-domain = 'fulldomain'
-yrs = [1,1]
+domain = 'NOTfulldomain'
+yrs = [1,50]
 output_num = '013'
 run_name = 'dg2'
 
@@ -33,12 +33,12 @@ if domain == 'fulldomain':
 	datatitle = 'fulldomain'
 else:
 	y1 = 0
-	y2 = 100
+	y2 = 0
 	x1 = 0
-	x2 = 100
+	x2 = 0
 
 print_stuff = 1
-save_data = 0
+save_data = 1
 spatial_flag = 1
 padding_fac = 1.0
 kfac = 100 # number of wavenumbers desired
@@ -72,7 +72,8 @@ g1 = .015
 g2 = .0075
 
 #datapath = '/g/data/v45/pm2987/nco_and_output/oc_spunup/'
-datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
+#datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
+datapath = '/g/data/v45/pm2987/nco_and_output/oc_long_time/'
 transfer_datapath = '/g/data/v45/pm2987/netcdf_transfers/'
 figpath = '~/Documents/Python/Figures/'
 #save_name = '_output'+output_num
@@ -136,12 +137,13 @@ print 'End windstress time ',datetime.now().time()
 #--------------------------------------------------------------------------
 # Call buoyancy_func.py
 if not os.path.exists(transfer_datapath+'buoyancy'+spatial_name+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-	#dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	#dataname2 = 'p'+save_name+'_layer2_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	#e_dataname = 'e'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
-	dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
-	e_dataname = 'e_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+	dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	dataname2 = 'p'+save_name+'_layer2_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	e_dataname = 'e'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	print dataname1
+	#dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
+	#dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+	#e_dataname = 'e_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
 	buoyancy_func.main(datapath,dataname1,dataname2,e_dataname,terms_dict)
 
 else:
