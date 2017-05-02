@@ -38,14 +38,14 @@ else:
 	x2 = 100
 
 print_stuff = 1
-save_data = 1
+save_data = 0
 spatial_flag = 1
 padding_fac = 1.0
 kfac = 100 # number of wavenumbers desired
 max_layer = 3
 
 # Plotting flags
-plot_flag = 1
+plot_flag = 0
 include_all_terms = 1
 area_preserv = 1
 gauss_smooth = 0
@@ -71,13 +71,13 @@ f0 = 9.37456*(10**(-5)) #1/s (Coriolis parameter)
 g1 = .015
 g2 = .0075
 
-datapath = '/g/data/v45/pm2987/nco_and_output/oc_spunup/'
-#datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
+#datapath = '/g/data/v45/pm2987/nco_and_output/oc_spunup/'
+datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
 transfer_datapath = '/g/data/v45/pm2987/netcdf_transfers/'
 figpath = '~/Documents/Python/Figures/'
 #save_name = '_output'+output_num
 save_name = ''
-extra_name = '_recalc'
+extra_name = ''
 
 if include_all_terms:
 	allTerms = 'allTerms'
@@ -88,29 +88,30 @@ fig_savename = 'Tbudget'+spatial_name+save_name+extra_name+'_'+allTerms+'_'+str(
 # Try constructing a dict of all these single quantities
 terms_dict = {'spacetime':spacetime,'padding_fac':padding_fac,'kfac':kfac,'print_stuff':print_stuff,'save_data':save_data,'savefigs':savefigs,'figpath':figpath,'fig_savename':fig_savename,'area_preserv':area_preserv,'gauss_smooth':gauss_smooth,'include_all_terms':include_all_terms,'save_name':save_name,'extra_name':extra_name,'spatial_flag':spatial_flag,'dx':[dx,dy],'dt':dt,'H':[H1,H2,H3,Htot],'f0':f0,'gprimes':[g1,g2],'yrs':yrs,'domain':[x1,x2,y1,y2]}
 
-
+'''
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 print 'Start time ',datetime.now().time()
 
 for layer in np.arange(1,max_layer+1):
 	# Call TKE_func_new.py
 	if not os.path.exists(transfer_datapath+'TKE'+spatial_name+save_name+extra_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-		dataname = climate_var+save_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+		#dataname = climate_var+save_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
 		#print 'dataname = ',dataname
-		#dataname = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
+		dataname = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
 		TKE_func_new_memtest.main(datapath,dataname,layer,terms_dict)
 	else:
 		print 'TKE code of layer '+str(layer)+' already exists!'
 
 print 'End TKE time ',datetime.now().time()
 #--------------------------------------------------------------------------
+
 # Call TPE_func.py
 for layer in np.arange(1,max_layer):
 	if not os.path.exists(transfer_datapath+'TPE'+spatial_name+save_name+extra_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-		dataname1 = climate_var+save_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-		dataname2 = climate_var+save_name+'_layer'+str(layer+1)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-		#dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
-		#dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+		#dataname1 = climate_var+save_name+'_layer'+str(layer)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+		#dataname2 = climate_var+save_name+'_layer'+str(layer+1)+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+		dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
+		dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
 		TPE_func.main(datapath,dataname1,dataname2,layer,terms_dict)
 
 	else:
@@ -121,38 +122,38 @@ print 'End TPE time ',datetime.now().time()
 #--------------------------------------------------------------------------
 # Call windstress_func.py
 if not os.path.exists(transfer_datapath+'windstress'+spatial_name+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-	dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	dataname2 = 'wekt'+save_name+'_'+str(x1)+'_'+str(x2-1)+'_'+str(y1)+'_'+str(y2-1)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	#dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
-	#dataname2 = 'wekt_Daily_1yr_dg2_output037_0_100_0_100_159_159_50daytest.nc'
+	#dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	#dataname2 = 'wekt'+save_name+'_'+str(x1)+'_'+str(x2-1)+'_'+str(y1)+'_'+str(y2-1)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
+	dataname2 = 'wekt_Daily_1yr_dg2_output037_0_100_0_100_159_159_50daytest.nc'
 	windstress_func.main(datapath,dataname1,dataname2,terms_dict)
 
 else:
 	print 'windstress code already exists!'
 
 print 'End windstress time ',datetime.now().time()
-
+'''
 #--------------------------------------------------------------------------
 # Call buoyancy_func.py
 if not os.path.exists(transfer_datapath+'buoyancy'+spatial_name+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-	dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	dataname2 = 'p'+save_name+'_layer2_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	e_dataname = 'e'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	#dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
-	#dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
-	#e_dataname = 'e_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+	#dataname1 = 'p'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	#dataname2 = 'p'+save_name+'_layer2_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	#e_dataname = 'e'+save_name+'_layer1_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
+	dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+	e_dataname = 'e_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
 	buoyancy_func.main(datapath,dataname1,dataname2,e_dataname,terms_dict)
 
 else:
 	print 'buoyancy code already exists!'
 
 print 'End buoyancy time ',datetime.now().time()
-
+'''
 #--------------------------------------------------------------------------
 # Call bottom_drag_func.py
 if not os.path.exists(transfer_datapath+'bottomDrag'+spatial_name+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
-	dataname = 'p'+save_name+'_layer3_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
-	#dataname = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
+	#dataname = 'p'+save_name+'_layer3_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'
+	dataname = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
 	bottom_drag_func.main(datapath,dataname,terms_dict)
 
 else:
@@ -160,7 +161,7 @@ else:
 
 print 'End bottom drag time ',datetime.now().time()
 #--------------------------------------------------------------------------
-
+'''
 # Plot
 
 if plot_flag:
