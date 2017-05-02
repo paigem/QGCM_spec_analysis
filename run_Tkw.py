@@ -15,6 +15,7 @@ import windstress_func
 import buoyancy_func
 import bottom_drag_func
 import plot_func
+import check_Ebalance_func
 
 # Specify parameters
 fluid_var = 'oc-coupled'
@@ -44,11 +45,12 @@ kfac = 100 # number of wavenumbers desired
 max_layer = 3
 
 # Plotting flags
-plot_flag = 0
+plot_flag = 1
 include_all_terms = 1
 area_preserv = 1
 gauss_smooth = 0
 savefigs = 0
+check_Ebalance = 1
 
 if spatial_flag:
 	spacetime = 'time'
@@ -239,6 +241,10 @@ if plot_flag:
 	del bd_data
 
 	plot_func.plot_Ebudget(TKE1,TKE2,TKE3,TPE12,TPE23,windstress,buoyancy,bottomDrag,kiso,ktiso,terms_dict)
+
+	
+	if check_Ebalance:
+		check_Ebalance_func.check_Ebalance(TKE1,TKE2,TKE3,TPE12,TPE23,windstress,buoyancy,bottomDrag,kiso,ktiso,terms_dict)
 
 
 

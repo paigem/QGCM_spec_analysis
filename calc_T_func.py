@@ -23,6 +23,7 @@ def make_odd(number):
 		number = number+1		
 	return number
 	
+
 # Make psi_array odd if originally even
 def make_var_odd(var):
 	nx = var.shape[0] # Get size of input psi
@@ -37,8 +38,16 @@ def make_var_odd(var):
 	
 	if not np.mod(ny,2):
 		var = np.concatenate((var,np.zeros((nx,1,nt))),axis=1)
+
+	# Redefine size after previous if statement
+	ny = var.shape[0]
+	
+	if not np.mod(nt,2):
+		var = np.concatenate((var,np.zeros((nx,ny,1))),axis=2)
 	del nx,ny,nt
-	return var #,nx,ny
+
+	return var
+
 
 # Create spectral domain
 def spec_domain(L):
@@ -125,14 +134,16 @@ def make_wiso(var1,var2,wv):
 
 #----------------------------------------------------------------------------------------------------
 
-def main(var1,var2,spacetime,padding_fac,kfac):
+def main(var1,var2,terms_dict):
 
 
 	# Define FFT normalization
 	nx = var1.shape[0]
 	ny = var1.shape[1]
 	nt = var1.shape[2]
-	dt = 1 # in days
+	dt = terms_dict.get('dt') # in days
+	padding_fac = terms_dict.get('padding_fac')
+	kfac = terms_dict.get('kfac')
 	print 'nx = ',nx
 
 	# Normalization factor for wavenumbers (translating from lat/lon to wavenumber)
@@ -149,8 +160,9 @@ def main(var1,var2,spacetime,padding_fac,kfac):
 	# Add dimensions to variables to make them odd
 	var1 = make_var_odd(var1)
 	var2 = make_var_odd(var2)
-	nx = var1.shape[0]
+	nx = var1.shape[0] # redefine in case that there is an added axis
 	ny = var1.shape[1]
+	nt = var1.shape[2]
 	print 'var1.shape after making odd = ',var1.shape
 	print 'new odd nx,ny = ',nx, ny
 
@@ -167,41 +179,48 @@ def main(var1,var2,spacetime,padding_fac,kfac):
 	mink = math.sqrt(min(wv[np.nonzero(wv>0)]))
 	del kx_,ky_
 
-
 	print 'maxk,mink=',maxk,mink
 
 	# Isotropic wavenumber and frequency
 	kiso = np.hstack((0,np.linspace(mink,maxk,kfac+1)))
-	ktiso = omega_units*np.arange(0,np.floor(T/2)+1)	#range_kt[:len_kt/2-1] DOUBLE CHECK THIS LINE!!!!!
+	ktiso = omega_units*np.arange(0,np.floor(nt/2)+1)
 	print 'kiso.shape=',kiso.shape
 	print 'ktiso.shape=',ktiso.shape
 	del mink,maxk
 
-
-
 	# Detrend relevant terms
-	var1 = detrend_func.main(var1,spacetime)
-	var2 = detrend_func.main(var2,spacetime)
+	var1 = detrend_func.main(var1,terms_dict.get('spacetime'))
+	var2 = detrend_func.main(var2,terms_dict.get('spacetime'))
 	print 'var1.shape = ',var1.shape
 
 	# Window relevant terms (J and p)
-	var1 = window_func.main(var1,spacetime)
-	var2 = window_func.main(var2,spacetime)
+	var1 = window_func.main(var1,terms_dict.get('spacetime'))
+	var2 = window_func.main(var2,terms_dict.get('spacetime'))
 
 	# Take FFT
-	if spacetime == 'spacetime':
+	if terms_dict.get('spacetime') == 'spacetime':
 		var1_fft = (1.0/(nx*ny*nt)) * np.fft.fftn(var1)
 		var2_fft = (1.0/(nx*ny*nt)) * np.fft.fftn(var2)
+	elif terms_dict.get('spacetime') == 'time':
+		var1_fft = (1.0/(nt)) * np.fft.fft(var1,axis=2)
+		var2_fft = (1.0/(nt)) * np.fft.fft(var2,axis=2)
 		del var1,var2
+	
 
 	# Pad the variables
-	if padding_fac > 1:
+	if terms_dict.get('padding_fac') > 1:
 		var1_fft = pad(var1_fft,Lx,Ly,nx,ny)
 		var2_fft = pad(var2_fft,Lx,Ly,nx,ny)
 
 	# Calculate the isotropic transfer
-	transfer_iso = make_iso(var1_fft,var2_fft,wv,kiso)
+	if terms_dict.get('spatial_flag'):
+		transfer_iso = make_wiso(var1_fft,var2_fft,wv)
+	else:
+		transfer_iso = make_iso(var1_fft,var2_fft,wv,kiso)
 	print 'transfer_iso.shape = ',transfer_iso.shape
+	del var1_fft,var2_fft
+
+	return transfer_iso,kiso,ktiso
 
 
 
