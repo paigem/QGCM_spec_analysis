@@ -95,7 +95,6 @@ def make_iso(var1,var2,wv,kiso):
 		else:
 			out = np.hstack((out,en))
 
-	print 'out.shape',out.shape
 	del wv,field,e0,en
 	return out
 
@@ -136,20 +135,23 @@ def main(var1,var2,terms_dict):
 	var1 = make_var_odd(var1)
 	var2 = make_var_odd(var2)
 	nt = var1.shape[0]
-	print 'var1.shape after making odd = ',var1.shape
+	if terms_dict.get('print_stuff'):
+		print 'var1.shape after making odd = ',var1.shape
 
 	# Isotropic frequency
 	ktiso = omega_units*np.arange(0,np.floor(nt/2)+1)
-	print 'ktiso.shape=',ktiso.shape
+	if terms_dict.get('print_stuff'):
+		print 'ktiso.shape=',ktiso.shape
 
 	# Detrend relevant terms
-	var1 = detrend_func_longTime.main(var1,terms_dict.get('spacetime'))
-	var2 = detrend_func_longTime.main(var2,terms_dict.get('spacetime'))
-	print 'var1.shape = ',var1.shape
+	var1 = detrend_func_longTime.main(var1,terms_dict.get('spacetime'),terms_dict)
+	var2 = detrend_func_longTime.main(var2,terms_dict.get('spacetime'),terms_dict)
+	if terms_dict.get('print_stuff'):
+		print 'var1.shape = ',var1.shape
 
 	# Window relevant terms (J and p)
-	var1 = window_func_longTime.main(var1,terms_dict.get('spacetime'))
-	var2 = window_func_longTime.main(var2,terms_dict.get('spacetime'))
+	var1 = window_func_longTime.main(var1,terms_dict.get('spacetime'),terms_dict)
+	var2 = window_func_longTime.main(var2,terms_dict.get('spacetime'),terms_dict)
 
 	# Take FFT
 	var1_fft = (1.0/(nt)) * np.fft.fft(var1)
@@ -163,7 +165,8 @@ def main(var1,var2,terms_dict):
 
 	# Calculate the isotropic transfer
 	transfer_iso = make_wiso(var1_fft,var2_fft)
-	print 'transfer_iso.shape = ',transfer_iso.shape
+	if terms_dict.get('print_stuff'):
+		print 'transfer_iso.shape = ',transfer_iso.shape
 	del var1_fft,var2_fft
 
 	return transfer_iso,ktiso

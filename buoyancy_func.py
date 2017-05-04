@@ -18,32 +18,32 @@ import window_func
 import detrend_func
 import calc_T_func_longTime
 #-----------------------------------------------------------------------
-def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
+def main(datapath,terms_dict,i,j):
 
 	### Load pressure1
-	p_data = Dataset(datapath+dataname1)
-	p1 = p_data.variables['p']
+	p_data = Dataset(datapath+'ocpo.nc')
+	p1 = p_data.variables['p'][:,0,j,i] # layer 1
 	del p_data
-	p1 = np.transpose(np.squeeze(p1,(2,1,0))) # dimensions: (x,y,time)
+	#p1 = np.transpose(np.squeeze(p1,(2,1,0))) # dimensions: (x,y,time)
 	if terms_dict.get('print_stuff'):
 		print 'p1.shape=',p1.shape
 		print 'Mem usage after loading p =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
 
 	### Load pressure2
-	p_data = Dataset(datapath+dataname2)
-	p2 = p_data.variables['p']
+	p_data = Dataset(datapath+'ocpo.nc')
+	p2 = p_data.variables['p'][:,1,j,i] # layer 2
 	del p_data
-	p2 = np.transpose(np.squeeze(p2,(2,1,0))) # dimensions: (x,y,time)
+	#p2 = np.transpose(np.squeeze(p2,(2,1,0))) # dimensions: (x,y,time)
 
 	# Take the difference of the two pressures
 	p_diff = p2 - p1
 	del p1,p2
 
 	### Load entrainment
-	e_data = Dataset(datapath+e_dataname)
-	e = e_data.variables['e']
+	e_data = Dataset(datapath+'ocpo.nc')
+	e = e_data.variables['e'][:,j,i]
 	del e_data
-	e = np.transpose(np.squeeze(e,(2,1,0))) # dimensions: (x,y,time)
+	#e = np.transpose(np.squeeze(e,(2,1,0))) # dimensions: (x,y,time)
 
 	if terms_dict.get('print_stuff'):
 		print 'Mem usage before transfer func =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
@@ -74,8 +74,9 @@ def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 		yrs = terms_dict.get('yrs')
 		save_name = terms_dict.get('save_name')
 		extra_name = terms_dict.get('extra_name')
-		if terms_dict.get('spatial_flag'):
-			#Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_spatial_1yr_test_layer1_yr159_dg2_output037.nc', 'w', format='NETCDF3_CLASSIC')
+		'''
+		# Save first timeseries
+		if i==0:
 			Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_spatial'+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc', 'w', format='NETCDF3_CLASSIC')
 			Tgrp.createDimension('w',transfer_iso.shape[0])
 			T = Tgrp.createVariable('T','f4',('w'))
@@ -84,20 +85,33 @@ def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 			ktiso = Tgrp.createVariable('ktiso','f4',('ktiso_dim'))
 			ktiso[:] = ktiso_plot
 			Tgrp.close()
-		else:
-			#Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_1yr_test_layer1_yr159_dg2_output037.nc', 'w', format='NETCDF3_CLASSIC')
-			Tgrp = Dataset('/g/data/v45/pm2987/netcdf_transfers/buoyancy_'+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc', 'w', format='NETCDF3_CLASSIC')
-			Tgrp.createDimension('k',transfer_iso.shape[0])
-			Tgrp.createDimension('w',transfer_iso.shape[1])
-			T = Tgrp.createVariable('T','f4',('k','w'))
-			T[:,:] = transfer_iso
-			Tgrp.createDimension('kiso_dim',len(kiso_plot))
-			kiso = Tgrp.createVariable('kiso','f4',('kiso_dim'))
-			kiso[:] = kiso_plot
-			Tgrp.createDimension('ktiso_dim',len(ktiso_plot))
-			ktiso = Tgrp.createVariable('ktiso','f4',('ktiso_dim'))
-			ktiso[:] = ktiso_plot
-			Tgrp.close()
+		'''
+		# Open, add, and resave to previous timeseries (for all but first i)
+		if i > x1 or j > 0:
+
+			data_open = Dataset(terms_dict.get('transfer_datapath')+'buoyancy_longTime'+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc')
+			old_data = data_open.variables['T']
+			del data_open
+			if terms_dict.get('print_stuff'):
+				print 'old_data.shape = ',old_data.shape
+			transfer_iso = old_data + transfer_iso
+			del old_data
+			# If on last i, divide by i
+			if i == (x2-1) and j == (y2-1):
+				transfer_iso = transfer_iso/float(i)
+				if terms_dict.get('print_stuff'):
+					print 'i and j = ',i,j
+			if terms_dict.get('print_stuff'):
+				print 'i and j = ',i,j
+
+		Tgrp = Dataset(terms_dict.get('transfer_datapath')+'buoyancy_longTime'+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc', 'w', format='NETCDF3_CLASSIC')
+		Tgrp.createDimension('w',transfer_iso.shape[0])
+		T = Tgrp.createVariable('T','f4',('w'))
+		T[:] = transfer_iso
+		Tgrp.createDimension('ktiso_dim',len(ktiso_plot))
+		ktiso = Tgrp.createVariable('ktiso','f4',('ktiso_dim'))
+		ktiso[:] = ktiso_plot
+		Tgrp.close()
 
 	'''
 	if terms_dict.get('spatial_flag'):

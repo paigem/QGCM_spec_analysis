@@ -43,13 +43,14 @@ def tukey(M,alpha,sym):
 
 #------------------------------------------------------------------------------------
 
-def main(var,spacetime):
+def main(var,spacetime,terms_dict):
 		
 	# 1d spatial window
 	window_1d = constructoverlappingwindows_1d_TUKEY(var.shape[0])
 
 	if spacetime == 'time':
-		print 'Making window in time'
+		if terms_dict.get('print_stuff'):
+			print 'Making window in time'
 
 		# Multiply var by windows in the relevant dimensions
 		var = var*window_1d

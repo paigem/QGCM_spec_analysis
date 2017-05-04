@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from netCDF4 import Dataset
 import os.path
 from datetime import datetime
+import resource
 
 import TKE_func_new_memtest
 import TPE_func
@@ -20,8 +21,8 @@ import check_Ebalance_func
 # Specify parameters
 fluid_var = 'oc-coupled'
 climate_var = 'p'
-domain = 'NOTfulldomain'
-yrs = [1,50]
+domain = 'fulldomain'
+yrs = [1,1]
 output_num = '013'
 run_name = 'dg2'
 
@@ -33,11 +34,11 @@ if domain == 'fulldomain':
 	datatitle = 'fulldomain'
 else:
 	y1 = 0
-	y2 = 0
+	y2 = 3
 	x1 = 0
-	x2 = 0
+	x2 = 3
 
-print_stuff = 1
+print_stuff = 0
 save_data = 1
 spatial_flag = 1
 padding_fac = 1.0
@@ -74,6 +75,7 @@ g2 = .0075
 #datapath = '/g/data/v45/pm2987/nco_and_output/oc_spunup/'
 #datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
 datapath = '/g/data/v45/pm2987/nco_and_output/oc_long_time/'
+#datapath = '/g/data/v45/pm2987/Spunup/output012/'
 transfer_datapath = '/g/data/v45/pm2987/netcdf_transfers/'
 figpath = '~/Documents/Python/Figures/'
 #save_name = '_output'+output_num
@@ -87,7 +89,7 @@ else:
 fig_savename = 'Tbudget'+spatial_name+save_name+extra_name+'_'+allTerms+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])
 
 # Try constructing a dict of all these single quantities
-terms_dict = {'spacetime':spacetime,'padding_fac':padding_fac,'kfac':kfac,'print_stuff':print_stuff,'save_data':save_data,'savefigs':savefigs,'figpath':figpath,'fig_savename':fig_savename,'area_preserv':area_preserv,'gauss_smooth':gauss_smooth,'include_all_terms':include_all_terms,'save_name':save_name,'extra_name':extra_name,'spatial_flag':spatial_flag,'dx':[dx,dy],'dt':dt,'H':[H1,H2,H3,Htot],'f0':f0,'gprimes':[g1,g2],'yrs':yrs,'domain':[x1,x2,y1,y2]}
+terms_dict = {'spacetime':spacetime,'padding_fac':padding_fac,'kfac':kfac,'print_stuff':print_stuff,'transfer_datapath':transfer_datapath,'save_data':save_data,'savefigs':savefigs,'figpath':figpath,'fig_savename':fig_savename,'area_preserv':area_preserv,'gauss_smooth':gauss_smooth,'include_all_terms':include_all_terms,'save_name':save_name,'extra_name':extra_name,'spatial_flag':spatial_flag,'dx':[dx,dy],'dt':dt,'H':[H1,H2,H3,Htot],'f0':f0,'gprimes':[g1,g2],'yrs':yrs,'domain':[x1,x2,y1,y2]}
 
 '''
 #--------------------------------------------------------------------------------------------------------------------------------------------------
@@ -133,7 +135,7 @@ else:
 	print 'windstress code already exists!'
 
 print 'End windstress time ',datetime.now().time()
-'''
+
 #--------------------------------------------------------------------------
 # Call buoyancy_func.py
 if not os.path.exists(transfer_datapath+'buoyancy'+spatial_name+save_name+extra_name+'_'+str(x1)+'_'+str(x2)+'_'+str(y1)+'_'+str(y2)+'_'+str(yrs[0])+'_'+str(yrs[1])+'.nc'):
@@ -144,10 +146,20 @@ if not os.path.exists(transfer_datapath+'buoyancy'+spatial_name+save_name+extra_
 	#dataname1 = 'p_Daily_1yr_dg2_output037_layer1_0_100_0_100_159_159_50daytest.nc'
 	#dataname2 = 'p_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
 	#e_dataname = 'e_Daily_1yr_dg2_output037_layer2_0_100_0_100_159_159_50daytest.nc'
-	buoyancy_func.main(datapath,dataname1,dataname2,e_dataname,terms_dict)
+'''
+print 'Start buoyancy time ',datetime.now().time()
 
-else:
-	print 'buoyancy code already exists!'
+print 'Mem usage before buoyancy =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
+
+# Updated buoyancy
+for j in np.arange(y2):
+	for i in np.arange(x2):
+
+		buoyancy_func.main(datapath,terms_dict,i,j)
+	if not np.mod(j,10):
+		print 'End j = ',j,' loop ',datetime.now().time()
+
+print 'Mem usage after buoyancy =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
 
 print 'End buoyancy time ',datetime.now().time()
 '''
