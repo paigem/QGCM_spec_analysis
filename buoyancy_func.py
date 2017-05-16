@@ -1,5 +1,7 @@
-# buoyancy.py: Does calculation for buoyancy term in spectral transfer equation
+# buoyancy_func.py: Does calculation for buoyancy term in spectral transfer equation
 #	- is called by run_Tkw.py
+#	- uses xarray 
+#	- calls transfer function for each individual row, then adds to current sum of rows 
 #----------------------------------------------------------------------
 
 import numpy as np

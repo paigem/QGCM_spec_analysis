@@ -21,13 +21,25 @@ import calc_Tspatial_func
 #-----------------------------------------------------------------------
 # Functions used in the code
 
-# Take x-derivative and average y-axis
+# Take x-derivative as a central difference
 def ddx(var,dx):
-	return (1./dx) * (var[:-1,:,:] - var[1:,:,:])
+	ddx_main = (1./(2*dx)) * (var[2:,:,:] - var[:-2,:,:]) # central difference for non-edges
+	ddx_first = (1./dx) * (var[1,:,:] - var[0,:,:]) # forward difference for first entry
+	ddx_first = ddx_first[None,:,:]
+	ddx_last = (1./dx) * (var[-1,:,:] - var[-2,:,:]) # backward difference for last entry
+	ddx_last = ddx_last[None,:,:]
+
+	return np.vstack((ddx_first,ddx_main,ddx_last))
 	
 # Take y-derivative
 def ddy(var,dy):
-	return (1./dy) * (var[:,:-1,:] - var[:,1:,:]) 
+	ddy_main = (1./(2*dy)) * (var[:,2:,:] - var[:,:-2,:]) # central difference for non-edges
+	ddy_first = (1./dy) * (var[:,1,:] - var[:,0,:]) # forward difference for first entry
+	ddy_first = ddy_first[:,None,:]
+	ddy_last = (1./dy) * (var[:,-1,:] - var[:,-2,:]) # backward difference for last entry
+	ddy_last = ddy_last[:,None,:]
+
+	return np.hstack((ddy_first,ddy_main,ddy_last)) 
 
 # Average specified dimension(s)
 def avg_dim(var,axis,number):
@@ -65,10 +77,10 @@ def main(datapath,dataname1,dataname2,layer,terms_dict):
 	dy = terms_dict.get('dx')[1]
 
 	# Take derivative of p
-	p1_x = avg_dim(ddx(p1,dx),'y',1)
-	p2_x = avg_dim(ddx(p2,dx),'y',1)
-	p1_y = avg_dim(ddy(p1,dy),'x',1)
-	p2_y = avg_dim(ddy(p2,dy),'x',1)
+	p1_x = ddx(p1,dx)
+	p2_x = ddx(p2,dx)
+	p1_y = ddy(p1,dy)
+	p2_y = ddy(p2,dy)
 	
 	# Take the difference of the two pressures
 	p_diff = p1 - p2
@@ -82,9 +94,6 @@ def main(datapath,dataname1,dataname2,layer,terms_dict):
 		#print 'p1.shape=',p1_x.shape
 		print 'J.shape=',J.shape
 		print 'Mem usage before transfer func =',resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1000
-
-	# Ensure that dimensions are the same
-	p_diff = avg_dim(p_diff,'xy',1)
 
 	if terms_dict.get('spatial_flag'):
 		transfer_iso,kiso,ktiso = calc_T_func.main(p_diff,J,terms_dict)
