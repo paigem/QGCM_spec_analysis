@@ -101,7 +101,7 @@ def make_iso(var1,var2,wv,kiso):
 
 # Make frequencies isotropic (i.e. symmetric)
 def make_wiso(var1,var2):
-	endw = float(var1.shape[0])
+	endw = float(var1.shape[0]-1)
 
 	# Define first and last entries of isotropic transfer
 	out1 = (10**9)*np.real(np.conjugate(var1[0])*var2[0])

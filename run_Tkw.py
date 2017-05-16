@@ -72,9 +72,10 @@ f0 = 9.37456*(10**(-5)) #1/s (Coriolis parameter)
 g1 = .015
 g2 = .0075
 
+datapath = '/g/data/v45/pm2987/Spunup/output022/ocpo.nc'
 #datapath = '/g/data/v45/pm2987/nco_and_output/oc_spunup/'
 #datapath = '/g/data/v45/pm2987/nco_and_output/ocean/'
-datapath = '/g/data/v45/pm2987/nco_and_output/oc_long_time/'
+#datapath = '/g/data/v45/pm2987/nco_and_output/oc_long_time/'
 #datapath = '/g/data/v45/pm2987/Spunup/output012/'
 transfer_datapath = '/g/data/v45/pm2987/netcdf_transfers/'
 figpath = '~/Documents/Python/Figures/'
