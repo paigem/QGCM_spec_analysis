@@ -80,7 +80,7 @@ def main(datapath,dataname1,dataname2,e_dataname,terms_dict):
 		transfer_iso,kiso,ktiso = calc_T_func.main(p_diff,e,terms_dict)
 	del p_diff,e
 
-	# Multiply by the correct constants: 1 / ((f0) * Htot * gprime_layer)
+	# Multiply by the correct constants: 1 / Htot
 	fac = -1.0/(terms_dict.get('H')[3])
 	transfer_iso = fac * transfer_iso
 
