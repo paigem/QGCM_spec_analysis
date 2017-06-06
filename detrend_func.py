@@ -40,19 +40,19 @@ def spatialdetrend_2d_QGCM(var):
 #--------------------------------------------------------------------------------------------
 
 
-def main(var,spacetime):
+def detrend_func(var,spacetime):
 	if spacetime == 'time' or spacetime == 'spacetime':
-		print 'Detrending in time'
+		print ('Detrending in time')
 		# Detrend in time (i.e. subtract off time mean)
-		var = signal.detrend(var,axis=2,type='linear') # dimensions still (time,lat,lon)
-		print 'After time detrend ',var.shape
+		var = signal.detrend(var,axis=2,type='constant') # dimensions (lon,lat,time)
+		print ('After time detrend ',var.shape)
 	
 		
 	if spacetime == 'space' or spacetime == 'spacetime':
-		print 'Detrending in space'
+		print ('Detrending in space')
 		# Do 2d spatial detrend
 		var = spatialdetrend_2d_QGCM(var) # Note that outputted dimensions are now: (lat,lon,time)
-		print 'After spatial detrend var.shape=',var.shape
+		print ('After spatial detrend var.shape=',var.shape)
 
 	return var
 

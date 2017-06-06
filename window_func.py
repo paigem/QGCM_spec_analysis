@@ -6,7 +6,7 @@ def constructoverlappingwindows_2d_TUKEY(len1,len2):
 	window1 = constructoverlappingwindows_1d_TUKEY(len1)
 	window2 = constructoverlappingwindows_1d_TUKEY(len2)
 	
-	print 'window1.shape=',window1.shape,np.transpose(window1).shape
+	#print 'window1.shape=',window1.shape,np.transpose(window1).shape
 	
 	# Construct the overlapping windows
 	window = np.tile(window2,(len1,1))*np.transpose(np.tile(window1,(len2,1)))
@@ -64,23 +64,24 @@ def main(var,spacetime):
 		
 	# 1d spatial window
 	window_1d = constructoverlappingwindows_1d_TUKEY(var.shape[2])
+	
 
 	if spacetime == 'spacetime':
-		print 'Making both time and space window'
+		print ('Making both time and space window')
 
 		# Multiply var by windows in the relevant dimensions
 		var = var*np.rollaxis(np.tile(window_2d,(var.shape[2],1,1)),0,3)*np.tile(window_1d,(var.shape[0],var.shape[1],1))
 	
-		print 'var.shape=',var.shape
+		print ('var.shape=',var.shape)
 		
 	elif spacetime == 'space':
-		print 'Making window in space'
+		print ('Making window in space')
 
 		# Multiply var by windows in the relevant dimensions
 		var = var*np.rollaxis(np.tile(window_2d,(var.shape[2],1,1)),0,3)
 
 	elif spacetime == 'time':
-		print 'Making window in time'
+		print ('Making window in time')
 
 		# Multiply var by windows in the relevant dimensions
 		var = var*np.tile(window_1d,(var.shape[0],var.shape[1],1))
