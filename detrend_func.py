@@ -42,9 +42,9 @@ def spatialdetrend_2d_QGCM(var):
 
 def detrend_func(var,spacetime):
 	if spacetime == 'time' or spacetime == 'spacetime':
-		print ('Detrending in time')
+		print ('Detrending in time yay!')
 		# Detrend in time (i.e. subtract off time mean)
-		var = signal.detrend(var,axis=2,type='constant') # dimensions (lon,lat,time)
+		var = signal.detrend(var,axis=2) #,type='linear') # dimensions (lon,lat,time)
 		print ('After time detrend ',var.shape)
 	
 		
