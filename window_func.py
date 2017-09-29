@@ -81,7 +81,7 @@ def main(var,spacetime):
 		var = var*np.rollaxis(np.tile(window_2d,(var.shape[2],1,1)),0,3)
 
 	elif spacetime == 'time':
-		print ('Making window in time')
+		#print ('Making window in time')
 
 		# Multiply var by windows in the relevant dimensions
 		var = var*np.tile(window_1d,(var.shape[0],var.shape[1],1))
